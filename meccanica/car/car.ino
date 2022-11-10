@@ -3,9 +3,9 @@
 //#include <NewPing.h>        //for the Ultrasonic sensor function library.
 
 //L298N motor control pins
-const int LeftMotorForward = 6;
-const int LeftMotorBackward = 7;
-const int RightMotorForward = 5;
+const int LeftMotorForward = 0;
+const int LeftMotorBackward = 2;
+const int RightMotorForward = 1;
 const int RightMotorBackward = 4;
 
 bool goesForward = false;
@@ -14,19 +14,27 @@ bool goesForward = false;
 Servo servo_motor; 
 
 void setup(){
-  Serial.begin(9600);
+  //Serial.begin(9600);
   pinMode(RightMotorForward, OUTPUT);
   pinMode(LeftMotorForward, OUTPUT);
   pinMode(LeftMotorBackward, OUTPUT);
   pinMode(RightMotorBackward, OUTPUT);
   
-  servo_motor.attach(9); //our servo pin
+  //servo_motor.attach(9); //our servo pin
 }
 
 void loop(){
-  
-  moveForward();
-  Serial.println("loop");
+
+    moveForward();
+    delay(1000);
+    moveStop();
+    delay(1000);
+    moveBackward();
+    delay(1000);
+    moveStop();
+    delay(1000);
+    
+  //Serial.println("loop");
 
 
 }
