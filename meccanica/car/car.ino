@@ -1,44 +1,49 @@
 
-#include <Servo.h>          //standard library for the servo
+//#include <Servo.h>          //standard library for the servo
 //#include <NewPing.h>        //for the Ultrasonic sensor function library.
 
 //L298N motor control pins
-const int LeftMotorForward = 0;
-const int LeftMotorBackward = 2;
-const int RightMotorForward = 1;
-const int RightMotorBackward = 4;
+#define LeftMotorForward 2
+ #define LeftMotorBackward 3
+ #define RightMotorForward 5
+ #define RightMotorBackward 4
 
 bool goesForward = false;
 
 
-Servo servo_motor; 
+//Servo servo_motor; 
 
 void setup(){
-  //Serial.begin(9600);
+  Serial.begin(9600);
   pinMode(RightMotorForward, OUTPUT);
   pinMode(LeftMotorForward, OUTPUT);
   pinMode(LeftMotorBackward, OUTPUT);
   pinMode(RightMotorBackward, OUTPUT);
-  
+  //Serial.begin(115200);
   //servo_motor.attach(9); //our servo pin
 }
 
 void loop(){
+  Serial.println("avvio");
 
-    moveForward();
-    delay(1000);
-    moveStop();
-    delay(1000);
-    moveBackward();
-    delay(1000);
-    moveStop();
-    delay(1000);
-    
+  digitalWrite(RightMotorForward, HIGH);
+  digitalWrite(LeftMotorForward,HIGH);
+  digitalWrite(RightMotorBackward, HIGH);
+  digitalWrite(LeftMotorBackward, HIGH);
+  delay(1000);
+  Serial.println("stop");
+  
+  digitalWrite(RightMotorForward, LOW);
+  digitalWrite(LeftMotorForward, LOW);
+  digitalWrite(RightMotorBackward, LOW);
+  digitalWrite(LeftMotorBackward, LOW);
+ 
+  delay(1000);
+  
+}
   //Serial.println("loop");
 
-
-}
-
+/*
 void moveStop(){
   
   digitalWrite(RightMotorForward, LOW);
@@ -105,3 +110,4 @@ void turnLeft(){
   digitalWrite(LeftMotorBackward, LOW);
   digitalWrite(RightMotorBackward, LOW);
 }
+*/

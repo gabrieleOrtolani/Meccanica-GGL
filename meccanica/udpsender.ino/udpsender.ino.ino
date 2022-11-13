@@ -2,11 +2,9 @@
 #include <WiFiUdp.h>
 #include <string.h>
 
-
-char mystr[1];
 char n[256];
 
-//port for connection
+//connection variables
 unsigned int localPort = 8080;      // local port to listen on
 const char* ssid = "FASTWEB-1-EDWWABMyi4Fl";
 const char* password = "3MGr9bSCD2";

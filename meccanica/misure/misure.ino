@@ -1,43 +1,3 @@
-/**
- ******************************************************************************
- * @file    X_NUCLEO_IKS01A3_HelloWorld.ino
- * @author  SRA
- * @version V1.0.0
- * @date    February 2019
- * @brief   Arduino test application for the STMicrolectronics X-NUCLEO-IKS01A3
- *          MEMS Inertial and Environmental sensor expansion board.
- *          This application makes use of C++ classes obtained from the C
- *          components' drivers.
- ******************************************************************************
- * @attention
- *
- * <h2><center>&copy; COPYRIGHT(c) 2019 STMicroelectronics</center></h2>
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *   1. Redistributions of source code must retain the above copyright notice,
- *      this list of conditions and the following disclaimer.
- *   2. Redistributions in binary form must reproduce the above copyright notice,
- *      this list of conditions and the following disclaimer in the documentation
- *      and/or other materials provided with the distribution.
- *   3. Neither the name of STMicroelectronics nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- ******************************************************************************
- */
-
 
 // Includes
 #include <LSM6DSOSensor.h>
@@ -47,6 +7,7 @@
 #include <STTS751Sensor.h>
 #include <HTS221Sensor.h>
 #include <Servo.h>
+#include <math.h>
 
 #ifdef ARDUINO_SAM_DUE
 #define DEV_I2C Wire1
@@ -57,6 +18,7 @@
 #else
 #define DEV_I2C Wire
 #endif
+
 #define SerialPort Serial
 
 
@@ -71,10 +33,9 @@ LIS2MDLSensor Mag(&DEV_I2C);
 #define echoPin 7
 #define pinAlimenta 8
 long durata, cm;
-
+float roll, pitch, yaw;
 // servo 
 Servo servo;
-
 
 //for comunication
 int32_t data[2][3];
@@ -108,7 +69,7 @@ void setup() {
   servo.attach(3);
 
 }
-void loop2() {
+void loop() {
   // Led blinking.
   digitalWrite(LED_BUILTIN, HIGH);
   delay(250);
@@ -147,6 +108,9 @@ void loop2() {
   AccGyr.Get_6D_Orientation_ZH(&zh);
 
   // Output data.
+  pitch = 180 * atan (accelerometer[0]/sqrt(accelerometer[1]*accelerometer[1] +accelerometer[2]*accelerometer[2]))/M_PI;
+  roll = 180 * atan (accelerometer[1]/sqrt(accelerometer[0]*accelerometer[0] + accelerometer[2]*accelerometer[2]))/M_PI;
+  yaw = 180 * atan (accelerometer[2]/sqrt(accelerometer[0]*accelerometer[0] + accelerometer[2]*accelerometer[2]))/M_PI;
 
   SerialPort.print(" | Acc[mg]: ");
 
@@ -191,6 +155,15 @@ void loop2() {
   SerialPort.print(",");  
 
   SerialPort.print(gyroscope[2]);
+  SerialPort.print(";"); 
+   
+  SerialPort.print(roll);
+  SerialPort.print(",");
+
+  SerialPort.print(pitch);
+  SerialPort.print(",");  
+
+  SerialPort.print(yaw);
   SerialPort.print(";\n"); 
 
 }
@@ -201,7 +174,7 @@ void digiservo(int val){
 }
 
 
-void loop(){
+void loop2(){
 
   AccGyr.Get_X_Axes(data[0]);
   AccGyr.Get_G_Axes(data[1]);
