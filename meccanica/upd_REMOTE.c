@@ -14,7 +14,7 @@
 // Driver code
 int main() {
 	int sockfd;
-	char buffer[MAXLINE];
+	char buffer[MAXLINE];s
 	char *ack="ACK";
 	struct sockaddr_in	 servaddr;
 	

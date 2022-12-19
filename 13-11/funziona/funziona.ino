@@ -21,7 +21,7 @@ int check;
 
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
 
 
   // Connect WiFi
@@ -48,7 +48,9 @@ void setup() {
 }
  
 void loop() {
-
+  Serial.read(n,256);
+  Serial.print(n);
+  Serial.write("a",1);
   if(check= Udp.parsePacket()){
     Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
     Serial.read(n,256);
@@ -56,7 +58,7 @@ void loop() {
     
     Udp.write(n);
     memset(n,0,256);
-    delay(10);
+    
     Udp.endPacket();
   }
 
