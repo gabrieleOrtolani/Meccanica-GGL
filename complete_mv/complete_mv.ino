@@ -1,9 +1,9 @@
 
 #include <Wire.h>
-#include NewLiquidCrystal Library for I2C
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 #include <MPU6050.h>
+
 // Define LCD pinout
 const int  en = 2, rw = 1, rs = 0, d4 = 4, d5 = 5, d6 = 6, d7 = 7, bl = 3;
 int16_t AcGyx, AcGyy,AcGyz;
@@ -48,7 +48,6 @@ bool discard;
 
 char a[2];
 int t;
-
 void setup() {
 
   Serial.begin(9600);
@@ -96,53 +95,42 @@ void setup() {
   digitalWrite(bwD, LOW);
   digitalWrite(fwS, HIGH);
   digitalWrite(bwS, LOW);
-  delay(2000);
+  delay(2000);   //--------> da ricontrollare
 
 }
 
 void loop() {
 
   Wire.beginTransmission(mpu_addr);
-  Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
+  Wire.write(0x3B);  // inizia la trasmissione dei dati del sensore
   Wire.endTransmission(false);
-  Wire.requestFrom(mpu_addr, 14, true); // request a total of 14 registers
-
-  AcGyx = Wire.read() << 8 | Wire.read(); // 0x3B (ACCEL_XOUT_H) & 0x3C (ACCEL_XOUT_L)
-  AcGyy = Wire.read() << 8 | Wire.read(); // 0x3D (ACCEL_YOUT_H) & 0x3E (ACCEL_YOUT_L)
-  AcGyz = Wire.read() << 8 | Wire.read(); // 0x3F (ACCEL_ZOUT_H) & 0x40 (ACCEL_ZOUT_L)
-  //AcGy[1][0] = Wire.read() << 8 | Wire.read(); // 0x43 (GYRO_XOUT_H) & 0x44 (GYRO_XOUT_L)
-  //AcGy[1][1] = Wire.read() << 8 | Wire.read(); // 0x45 (GYRO_YOUT_H) & 0x46 (GYRO_YOUT_L)
-  //AcGy[1][2] = Wire.read() << 8 | Wire.read(); // 0x47 (GYRO_ZOUT_H) & 0x48 (GYRO_ZOUT_L)
-
-  
-  //for(int i = 0; i<1; i++){
-  //  for(int j = 0; j<3; j++){
-
-  Serial.print(AcGyx, DEC);
-  Serial.write(",",1);
-  Serial.print(AcGyy, DEC);
-  Serial.write(",",1);
-  Serial.print(AcGyz, DEC);
-  Serial.write(";\n",2);
-/*
-  while(1){
-    a[0] = Serial.read();
-    if(strcmp(a,"a")){
-      //Serial.println(a);
-      break;}
-  }
-*/
+  Wire.requestFrom(mpu_addr, 14, true); // richiedi 14 byte di dati
+  val1 = Wire.read() << 8 | Wire.read(); // acclerometro asse X
+  val2 = Wire.read() << 8 | Wire.read(); // acclerometro asse Y
+  val3 = Wire.read() << 8 | Wire.read(); // acclerometro asse Z
+  Tmp = Wire.read() << 8 | Wire.read(); // temperatura
+  val4 = Wire.read() << 8 | Wire.read(); // giroscopio asse X
+  val5 = Wire.read() << 8 | Wire.read(); // giroscopio asse Y
+  val6 = Wire.read() << 8 | Wire.read(); // giroscopio asse Z
 
   discard = false;
   curDist = hcsr04();
   t = millis();
-
+//invio pacchetti dati con 6 valori
+  Serial.print(val1, DEC);// acclerometro asse X
+  Serial.print(val2, DEC);// acclerometro asse Y
+  Serial.print(val3, DEC);// acclerometro asse Z
+  Serial.print(val4, DEC);// giroscopio asse X
+  Serial.print(val5, DEC);// giroscopio asse Y
+  Serial.print(val6, DEC);// giroscopio asse Z
+  Serial.print(curDist,DEC)// distanza  
+  Serial.println("Valori inviati sulla seriale!");
+  //forse il valore che ho misurato non è coerente con la media delle misure
   if((curDist - prevDist)>50){
     discard = true;
   }else{
     prevDist = curDist ;
   }
-
   if (!discard){
     if (curDist>initDist) {   
       digitalWrite(buzz, LOW);
@@ -160,16 +148,10 @@ void loop() {
       digitalWrite(buzz, LOW);
       val2Set = map(curDist,(long)20,(long)initDist, (long)0,(long)120);
     }
-
-
-  
+    
     analogWrite(enD,val2Set);
     analogWrite(enS,val2Set);
 
-
-
-    //Serial.println(curDist);  
-    //Serial.println(val2Set);
     printPwm(val2Set);
     printDistance(curDist);
     
@@ -177,18 +159,9 @@ void loop() {
         clearVariable(6,0);
         clearVariable(6,1);
     }
-
   }
-  //delay(1000);
 }
-
-
-
-
-
-
-
-
+//funzione che ritorna la distanza misurata dal sensore HCSR04
 long hcsr04(){
     digitalWrite(out,LOW);
     delayMicroseconds(2);
@@ -197,11 +170,8 @@ long hcsr04(){
     digitalWrite(out,LOW);
     dur=pulseIn(in,HIGH);
     tocm=microsecondsToCentimeters(dur);
-    //Serial.println(String(tocm));
-
     return tocm;
 }
-
 
 long microsecondsToCentimeters(long microseconds){
   return microseconds / 29 / 2;
@@ -223,97 +193,4 @@ void printDistance(int distance_value){
   lcd.setCursor(6, 1);
   lcd.print(distance_value);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void prova1(){
-  // accendo motore destra
-  digitalWrite(fwD, HIGH);
-  digitalWrite(bwD, LOW);
-
-  //setto la velocità su scala 255
-  int speedD  = 150; //velocità motore destro
-  analogWrite(enD,speedD);
-
-  // accendo motore sinistro
-  digitalWrite(fwS, HIGH);
-  digitalWrite(bwS, LOW);
-
-  //setto la velocità su scala 255
-  int speedS  = speedD; //velocità motore sinistro
-  analogWrite(enD,speedS);
-  
-  delay(3000);
-  
-
-  //inverto senso
-  digitalWrite(fwD, LOW);
-  digitalWrite(bwD, HIGH);
-  digitalWrite(fwS, LOW);
-  digitalWrite(bwS, HIGH);
-
-  delay(3000);
-
-  
-  //spengo i motori
-  digitalWrite(fwD, LOW);
-  digitalWrite(bwD, LOW);
-  digitalWrite(fwS, LOW);
-  digitalWrite(bwS, LOW);
-
-}
-
-void prova2(){
-
-  //accendo i motori
-  digitalWrite(fwD, LOW);
-  digitalWrite(bwD, HIGH);
-  //digitalWrite(fwS, LOW);
-  //digitalWrite(bwS, HIGH);
-
-  //accelero da 0 al massimo
-  for(int i = 0; i< 256; i++){
-    analogWrite(enD,i);
-    //analogWrite(enS,i);
-    Serial.println(i);
-    delay(20);
-  }
-
-  Serial.println("top speed");
-  delay(200);
-
-  //decelero dal massimo fino a zero
-  for(int i = 255; i >= 0; --i){
-    analogWrite(enD,i);
-    //analogWrite(enS,i);
-    Serial.println(i);
-    delay(20);
-  }
-
-  //spengo i motori
-  digitalWrite(fwD, LOW);
-  digitalWrite(bwD, LOW);
-  digitalWrite(fwS, LOW);
-  digitalWrite(bwS, LOW);
-
-}
-
-
-
 

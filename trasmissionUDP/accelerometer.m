@@ -4,7 +4,7 @@ close all
 clear all
 
 % import from file to array
-mydata1 = importdata("meccanica\mydata.txt")
+mydata1 = importdata("dati.txt");
 %converto in matrice
 %mydata1 =table2array(mydata);
 
