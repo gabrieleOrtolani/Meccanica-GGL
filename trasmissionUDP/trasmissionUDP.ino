@@ -56,7 +56,7 @@ void loop() {
 
       char data[32];
       Serial.print(val1);
-      sprintf(data, "%d,%d,%d;%d,%d,%d,%d;", val1, val2, val3, val4, val5, val6, val7);
+      sprintf(data, "%d %d  %d  %d  %d  %d  %d", val1, val2, val3, val4, val5, val6, val7);
       Serial.println(data);
       Udp.write(data);
       Udp.endPacket();
