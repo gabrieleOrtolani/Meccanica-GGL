@@ -4,24 +4,18 @@
 
 import socket
 
- 
 
 msgFromClient       = "ACK"
 
 bytesToSend         = str.encode(msgFromClient)
 
-serverAddressPort   = ("192.168.1.101", 8888)
+serverAddressPort   = ("192.168.1.105", 1234)
 
 bufferSize          = 1024
 
- 
-
 # Create a UDP socket at client side
-
 UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
-
- 
 with open("dati.txt", "w") as f:
 # Send to server using created UDP socket
     while 1:
@@ -29,12 +23,7 @@ with open("dati.txt", "w") as f:
         msgFromServer = UDPClientSocket.recvfrom(bufferSize)
         
         print(msgFromServer[0])
-        
-        #a, b, c = map(int, msgFromServer[0].split(b","))
-        
-        #f.write(str(a) + ",")
-        #f.write(str(b) + ",")
-        #f.write(str(c) + ";\n")
+
         f.write(str(msgFromServer[0])+"\n")
 
 f.close()
