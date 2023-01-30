@@ -1,6 +1,6 @@
-
+// Include Wire Library for I2C
 #include <Wire.h>
-//#include NewLiquidCrystal Library for I2C
+// Include NewLiquidCrystal Library for I2C
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 #include <MPU6050.h>
@@ -39,19 +39,35 @@ int enS = 3;
 int fwS = 4; //avanti SX
 int bwS = 5; //indietro SX
 
+int START = 2;
 
+
+//distance variables
 long initDist;
 long curDist;
 long prevDist;
 long val2Set;
 bool discard;
+long rawDist;
+float filterValue;
+int maxSpeed;
+int minSpeed;
+int breakDist;
+double kalDist;
 
 char a[2];
 int t;
 
+
+
 void setup() {
 
   Serial.begin(9600);
+
+  maxSpeed=255;
+  minSpeed=0;
+  breakDist = 16;
+
   // put your setup code here, to run once:ù
   pinMode(enD, OUTPUT);
   pinMode(fwD, OUTPUT);
@@ -63,22 +79,35 @@ void setup() {
   pinMode(in,  INPUT);
   pinMode(out, OUTPUT);
 
+  pinMode(START, INPUT);
 
   pinMode(buzz, OUTPUT);
 
-  Wire.begin();
-  Wire.beginTransmission(mpu_addr);
-  Wire.write(0x6B);  // PWR_MGMT_1 register
-  Wire.write(0);     // set to zero (wakes up the MPU-6050)
-  Wire.endTransmission(true);
+
 
   lcd.begin(16,2);
-  // Print on first row
 
+
+  while(digitalRead(START)==HIGH){
+    lcd.print("wait...");
+    delay(100);
+    lcd.clear();
+  }
+  rawDist = hcsr04();
+
+  while(digitalRead(START)==LOW){
+    lcd.print("wait...");
+    delay(100);
+    curDist = hcsr04();
+    Serial.write(curDist);
+    Serial.write(val2Set);
+    lcd.clear();
+  }
 
   lcd.print("start");
   delay(1000);
   lcd.clear();
+
   //Scriviamo velocità:
   lcd.setCursor(0,0);
   lcd.print("PWM: ");
@@ -88,102 +117,71 @@ void setup() {
   lcd.print("Dist: ");
 
 
-  initDist = 35;//hcsr04();
-  Serial.println(initDist);
-  curDist = initDist;
-  prevDist = curDist;
-  digitalWrite(fwD, HIGH);
-  digitalWrite(bwD, LOW);
-  digitalWrite(fwS, HIGH);
-  digitalWrite(bwS, LOW);
-  delay(2000);
+ // Serial.println(initDist);
+  rawDist = hcsr04();
+  prevDist = rawDist;
 
 }
 
 void loop() {
 
-  Wire.beginTransmission(mpu_addr);
-  Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
-  Wire.endTransmission(false);
-  Wire.requestFrom(mpu_addr, 14, true); // request a total of 14 registers
-
-  AcGyx = Wire.read() << 8 | Wire.read(); // 0x3B (ACCEL_XOUT_H) & 0x3C (ACCEL_XOUT_L)
-  AcGyy = Wire.read() << 8 | Wire.read(); // 0x3D (ACCEL_YOUT_H) & 0x3E (ACCEL_YOUT_L)
-  AcGyz = Wire.read() << 8 | Wire.read(); // 0x3F (ACCEL_ZOUT_H) & 0x40 (ACCEL_ZOUT_L)
-  //AcGy[1][0] = Wire.read() << 8 | Wire.read(); // 0x43 (GYRO_XOUT_H) & 0x44 (GYRO_XOUT_L)
-  //AcGy[1][1] = Wire.read() << 8 | Wire.read(); // 0x45 (GYRO_YOUT_H) & 0x46 (GYRO_YOUT_L)
-  //AcGy[1][2] = Wire.read() << 8 | Wire.read(); // 0x47 (GYRO_ZOUT_H) & 0x48 (GYRO_ZOUT_L)
-
-  
-  //for(int i = 0; i<1; i++){
-  //  for(int j = 0; j<3; j++){
-
-  Serial.print(AcGyx, DEC);
-  Serial.write(",",1);
-  Serial.print(AcGyy, DEC);
-  Serial.write(",",1);
-  Serial.print(AcGyz, DEC);
-  Serial.write(";\n",2);
-/*
-  while(1){
-    a[0] = Serial.read();
-    if(strcmp(a,"a")){
-      //Serial.println(a);
-      break;}
-  }
-*/
-
   discard = false;
-  curDist = hcsr04();
+  rawDist = hcsr04();
   t = millis();
 
-  if((curDist - prevDist)>50){
-    discard = true;
-  }else{
-    prevDist = curDist ;
-  }
+  curDist = rawDist;
+  Serial.write(curDist);
+  Serial.write(val2Set);
 
-  if (!discard){
+  //chosing value for PWM
     if (curDist>initDist) {   
       digitalWrite(buzz, LOW);
-      if (val2Set<180) val2Set +=10; 
-    }else if (curDist<20){
-      val2Set = (long) 0;
-      if (beep%6 == 0){
-        digitalWrite(buzz, LOW);
-      }else if (beep%3 == 0){
-        digitalWrite(buzz, HIGH);
-      }
-      beep++;
+      initDist = curDist;
+    }else if (curDist<breakDist){      
+      val2Set = (long) minSpeed;
+      if (digitalRead(START)==HIGH){ beep_f();}
+      else{ digitalWrite(buzz, LOW);}
 
-    }else if(curDist<=initDist){
+    }else if(curDist>=breakDist){
       digitalWrite(buzz, LOW);
-      val2Set = map(curDist,(long)20,(long)initDist, (long)0,(long)120);
+      if (val2Set<maxSpeed) val2Set+=5;  
+    }
+    constrain(val2Set,minSpeed,maxSpeed);
+
+    //actuate PWM
+    if (val2Set>=0){
+      digitalWrite(fwD, HIGH);
+      digitalWrite(bwD, LOW);
+      digitalWrite(fwS, HIGH);
+      digitalWrite(bwS, LOW);
+
+    }else{
+      val2Set = abs(val2Set);
+      digitalWrite(bwD, HIGH);
+      digitalWrite(bwS, HIGH);
+      digitalWrite(fwD, LOW);
+      digitalWrite(fwS, LOW);    
     }
 
 
-  
-    analogWrite(enD,val2Set);
-    analogWrite(enS,val2Set);
+    if(digitalRead(START)== HIGH){
+      analogWrite(enD,val2Set);
+      analogWrite(enS,val2Set);      
+    }
 
-
-
-    //Serial.println(curDist);  
-    //Serial.println(val2Set);
     printPwm(val2Set);
     printDistance(curDist);
     
     if (t%100 == 0){
         clearVariable(6,0);
+        clearVariable(7,0);
         clearVariable(6,1);
+        clearVariable(7,1);
     }
 
-  }
-  //delay(1000);
+  
+
 }
-
-
-
 
 
 
@@ -198,9 +196,25 @@ long hcsr04(){
     dur=pulseIn(in,HIGH);
     tocm=microsecondsToCentimeters(dur);
     //Serial.println(String(tocm));
+    kalDist = kalman((double)tocm);
+    
 
-    return tocm;
+    return (long)kalDist;
 }
+
+double kalman(double U){
+  static const double R = 40;
+  static const double H = 1.00;
+  static double Q = 10;
+  static double P = 0;
+  static double U_hat = 0;
+  static double K = 0;
+  K = P*H/(H*P*H+R);
+  U_hat += + K*(U-H*U_hat);
+  P = (1-K*H)*P+Q;
+  return U_hat;
+}
+
 
 
 long microsecondsToCentimeters(long microseconds){
@@ -222,6 +236,15 @@ void printPwm(int pwm_value){
 void printDistance(int distance_value){
   lcd.setCursor(6, 1);
   lcd.print(distance_value);
+}
+
+void beep_f(){
+    if (beep%6 == 0){
+        digitalWrite(buzz, LOW);
+    }else if (beep%3 == 0){
+        digitalWrite(buzz, HIGH);
+    }
+    beep++;
 }
 
 
@@ -313,6 +336,7 @@ void prova2(){
   digitalWrite(bwS, LOW);
 
 }
+
 
 
 

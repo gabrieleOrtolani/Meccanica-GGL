@@ -4,38 +4,30 @@
 
 import socket
 
- 
 
 msgFromClient       = "ACK"
 
 bytesToSend         = str.encode(msgFromClient)
 
-serverAddressPort   = ("192.168.0.110", 8888)
+serverAddressPort   = ("192.168.1.118", 8888)
 
-bufferSize          = 1024
-
- 
+bufferSize          = 128
 
 # Create a UDP socket at client side
-
 UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
+UDPClientSocket.sendto(bytesToSend, serverAddressPort)
 
- 
 with open("dati.txt", "w") as f:
-# Send to server using created UDP socket
+# Send to server using createsd UDP socket
     while 1:
         UDPClientSocket.sendto(bytesToSend, serverAddressPort)
         msgFromServer = UDPClientSocket.recvfrom(bufferSize)
         
-        print(msgFromServer[0])
+        print(msgFromServer[0].decode("utf-8"))
         
-        #a, b, c = map(int, msgFromServer[0].split(b","))
-        
-        #f.write(str(a) + ",")
-        #f.write(str(b) + ",")
-        #f.write(str(c) + ";\n")
-        f.write(str(msgFromServer[0])+"\n")
+
+        f.write(msgFromServer[0].decode("utf-8")+"\n")
 
 f.close()
 
