@@ -105,9 +105,10 @@ legend('Distanza', 'PWM', 'fontSize', 14);
 
 
 
-
-
-
+figure(5)
+strips(AccY_STOP,0.18,1000,1.25)
+hold on
+strips(AccY_ABS,0.18,1000,1.25)
 
 
 
