@@ -9,7 +9,7 @@ msgFromClient       = "ACK"
 
 bytesToSend         = str.encode(msgFromClient)
 
-serverAddressPort   = ("192.168.1.118", 8888)
+serverAddressPort   = ("172.20.10.3", 8888)
 
 bufferSize          = 128
 

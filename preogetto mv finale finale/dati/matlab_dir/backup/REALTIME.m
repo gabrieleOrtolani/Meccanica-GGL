@@ -3,8 +3,8 @@ close all
 clear all
 
 % import from file to array
-ABS = importdata("datiABS_bellobello.txt");
-STOP = importdata("datiSTOP_bello.txt");
+ABS = importdata("dati.txt");
+
 
 %tempo di campionamento ABS
 tempo_ABS= ABS(:,8)*0.001;
@@ -22,54 +22,30 @@ pwm_ABS = ABS(:,9);
 
 
 
-%tempo di campionamento STOP
-tempo_STOP = STOP(:,8)*0.001;
-%giroscopio STOP 
-gyroX_STOP = STOP(:, 4)/131.0;% [°] unit
-gyroY_STOP = STOP(:, 5)/131.0;% [°] unit
-gyroZ_STOP = STOP(:, 6)/131.0;% [°] unit
-%accelerazioni STOP
-AccX_STOP =STOP(:, 1)/16384.0;% [g] unit
-AccY_STOP =STOP(:, 2)/16384.0;% [g] unit
-AccZ_STOP =STOP(:, 3)/16384.0;% [g] unit
-%spazio (distanza) STOP 
-distanza_STOP = STOP(:,7);
-pwm_STOP = STOP(:,9);
 
 %GRAFICO SPAZIO-TEMPO
 figure(1)
-axis(1) = subplot(3,1,1);
-plot(tempo_STOP,distanza_STOP);
-title('Distanza - Tempo', 'FontSize', 18);
-xlabel('t [sec]', 'FontSize', 16);
-ylabel('cm', 'FontSize', 16);
-grid on;
-axis(2) = subplot(3,1,2);
 plot(tempo_ABS,distanza_ABS);
 xlabel('t [sec]', 'FontSize', 16);
 ylabel('cm', 'FontSize', 16);
 grid on;
-axis(3)=subplot(3,1,3);
-plot(tempo_ABS,distanza_ABS,tempo_STOP,distanza_STOP);
-xlabel('t [sec]', 'FontSize', 16);
-ylabel('cm', 'FontSize', 16);
-grid on;
+
 
 
 %GRAFICO GIROSCOPIO
 figure(2)
 axis(1) = subplot(3,1,1);
-plot(tempo_STOP,gyroX_STOP,tempo_ABS,gyroX_ABS)
+plot(tempo_ABS,gyroX_ABS)
 title('gyroX', 'FontSize', 18);
 xlabel('t [sec]', 'FontSize', 16);
 ylabel('°/s', 'FontSize', 16);
 axis(2) = subplot(3,1,2);
-plot(tempo_STOP,gyroY_STOP,tempo_ABS,gyroY_ABS)
+plot(tempo_ABS,gyroY_ABS)
 title('gyroY', 'FontSize', 18);
 xlabel('t [sec]', 'FontSize', 16);
 ylabel('°/s', 'FontSize', 16);
 axis(3) = subplot(3,1,3);
-plot(tempo_STOP,gyroZ_STOP,tempo_ABS,gyroZ_ABS)
+plot(tempo_ABS,gyroZ_ABS)
 title('gyroZ', 'FontSize', 18);
 xlabel('t [sec]', 'FontSize', 16);
 ylabel('°/s', 'FontSize', 16);
@@ -77,30 +53,25 @@ ylabel('°/s', 'FontSize', 16);
 %GRAFICO ACCELERAZIONI
 figure(3)
 axis(1) = subplot(3,1,1);
-plot(tempo_STOP,AccX_STOP,tempo_ABS,AccX_ABS)
+plot(tempo_ABS,AccX_ABS)
 title('AccX', 'FontSize', 18);
 xlabel('t [sec]', 'FontSize', 16);
 ylabel('g', 'FontSize', 16);
 axis(2) = subplot(3,1,2);
-plot(tempo_STOP,AccY_STOP,tempo_ABS,AccY_ABS)
+plot(tempo_ABS,AccY_ABS)
 title('AccY', 'FontSize', 18);
 xlabel('t [sec]', 'FontSize', 16);
 ylabel('g', 'FontSize', 16);
 axis(3) = subplot(3,1,3);
-plot(tempo_STOP,AccZ_STOP,tempo_ABS,AccZ_ABS)
+plot(tempo_ABS,AccZ_ABS)
 title('AccZ', 'FontSize', 18);
 xlabel('t [sec]', 'FontSize', 16);
 ylabel('g', 'FontSize', 16);
 
 %GRAFICO PWM-DISTANZA
 figure(4)
-axis(1)=subplot(2,1,1);
 plot(tempo_ABS,distanza_ABS,tempo_ABS,pwm_ABS)
 title('pwm-distnza nel tempo', 'FontSize', 18);
-legend('Distanza', 'PWM', 'fontSize', 14);
-
-axis(2)=subplot(2,1,2);
-plot(tempo_STOP,distanza_STOP,tempo_STOP,pwm_STOP)
 legend('Distanza', 'PWM', 'fontSize', 14);
 
 

@@ -5,12 +5,14 @@ clear all
 
 % import from file to array
 mydata1 = importdata("datiSTOP_bello.txt")
+mydata2 = importdata("datiABS_bellobello.txt")
 %converto in matrice
 %mydata1 =table2array(mydata);
 
 gyroX = mydata1(:,4) - mean(mydata1(:, 4));
 gyroY = mydata1(:, 5) - mean(mydata1(:, 5));
 gyroZ = mydata1(:,6) - mean(mydata1(:, 6));
+gyroZ2= mydata2(:,6)-mean(mydata2(:,6));
 
 Ts = 0.05;
 Fs = 1/Ts;
@@ -27,6 +29,7 @@ a = 1;
 filteredX = filter(b, a, gyroX);
 filteredY = filter(b, a, gyroY);
 filteredZ = filter(b, a, gyroZ);
+filteredZ2 = filter(b, a, gyroZ2);
 
 % accelerations analysis without filter
 figure(1)
@@ -45,7 +48,7 @@ ylabel('°/s', 'FontSize', 16);
 grid on;
 
 axis(3) = subplot(3,1,3);
-plot(t, gyroZ);
+plot(t, gyroZ,t,gyroZ2);
 title('gyroZ', 'FontSize', 18);
 xlabel('t [sec]', 'FontSize', 16);
 ylabel('°/s', 'FontSize', 16);
@@ -69,7 +72,7 @@ ylabel('°/s', 'FontSize', 16);
 grid on;
 
 axis(3) = subplot(3,1,3);
-plot(t, filteredZ);
+plot(t, filteredZ,t,filteredZ2);
 title(['gyroZ filtered'], 'FontSize', 18);
 xlabel('t [sec]', 'FontSize', 16);
 ylabel('°/s', 'FontSize', 16);
